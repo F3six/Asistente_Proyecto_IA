@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #ff2d78;
+  --color-secondary: #00ffcc;
+  --color-secondary-cyan: #00f0ff;
+  --color-tertiary: #ffe04a;
+  --color-background: #0a0a12;
+  --color-surface: #0f0f1a;
+  --color-surface-container-lowest: #0a0a12;
+  --color-surface-container-low: #111118;
+  --color-surface-container: #141422;
+  --color-surface-container-high: #1e1e30;
+  --color-surface-container-highest: #28283e;
+  --color-surface-variant: #1e1e30;
+  --color-on-surface: #e8e0f0;
+  --color-on-surface-variant: #a098b0;
+  --color-outline: #43445c;
+  --color-outline-variant: #28293d;
+  --color-error: #ff4444;
+
+  --font-headline: "Sora", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #0a0a12;
+  color: #e8e0f0;
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a12;
+}
+::-webkit-scrollbar-thumb {
+  background: #28283e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff2d78;
+}
+
+/* Material Symbols Outlined */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Efectos Neón */
+.glow-pink {
+  box-shadow: 0 0 20px -3px rgba(255, 45, 120, 0.45);
+}
+.glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(0, 255, 204, 0.35);
+}
+.glow-sm-pink {
+  box-shadow: 0 0 10px -2px rgba(255, 45, 120, 0.3);
+}
+.glow-sm-cyan {
+  box-shadow: 0 0 10px -2px rgba(0, 255, 204, 0.3);
+}
+.glow-yellow {
+  box-shadow: 0 0 14px -2px rgba(255, 224, 74, 0.35);
+}

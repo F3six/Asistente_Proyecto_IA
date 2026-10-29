@@ -1,0 +1,129 @@
+{
+  "framework": "Spring Boot",
+  "version": "3.2.x",
+  "architecture_type": "Arquitectura en Capas (N-Tier)",
+  "root_package_pattern": "src/main/java/",
+  "folders": {
+    "controllers": {
+      "folder_name": "controllers/",
+      "layer_name": "Capa de Presentación / Endpoints REST",
+      "description_simple": "Aquí se reciben las peticiones de los usuarios o del navegador (HTTP GET, POST, etc.) y se devuelven las respuestas. Es la puerta de entrada de tu sistema.",
+      "expected_contents": "Clases anotadas con @RestController o @Controller que definen rutas y delegan la lógica a los servicios.",
+      "architecture_role": "Recepción y mapeo de solicitudes web HTTP, validación inicial del DTO y serialización de respuestas.",
+      "naming_conventions": [
+        "PascalCase con sufijo Controller en singular (Ej: EmployeeController.java, AuthController.java)",
+        "No uses plurales en el nombre de la clase (usa EmployeeController, no EmployeesController)"
+      ],
+      "anti_patterns": [
+        "No pongas lógica de base de datos directa (queries SQL o llamadas a repositorios sin pasar por servicio)",
+        "No escribas cálculos pesados de negocio dentro del controlador"
+      ],
+      "key_annotations_or_keywords": [
+        {"name": "@RestController", "description": "Combina @Controller y @ResponseBody para exponer APIs REST."},
+        {"name": "@RequestMapping", "description": "Define la URL base del recurso (ej: /api/v1/empleados)."},
+        {"name": "@GetMapping / @PostMapping", "description": "Mapea métodos HTTP específicos."}
+      ],
+      "educational_tip": "Mantén los controladores 'delgados' (Thin Controllers). Su único trabajo es validar la entrada, llamar a un servicio y entregar la respuesta con el código HTTP correspondiente."
+    },
+    "models": {
+      "folder_name": "models/",
+      "layer_name": "Capa de Dominio & Datos",
+      "description_simple": "Aquí se definen las estructuras de tus datos. Cada archivo Java dentro de esta carpeta suele representar una tabla en tu base de datos relacional, especificando qué columnas contiene y cómo se vincula con otras entidades.",
+      "expected_contents": "Entidades JPA con atributos, getters, setters y anotaciones de mapeo relacional.",
+      "architecture_role": "Moldea y persiste datos en la base de datos a través del ORM Hibernate.",
+      "naming_conventions": [
+        "Nombre en Singular en PascalCase (Ej: Employee.java, Department.java, Role.java)",
+        "Evita plurales o verbos (No uses UsersList.java ni GetProducts.java)"
+      ],
+      "anti_patterns": [
+        "Evita colocar lógica de negocio o consultas SQL directas dentro de tus modelos",
+        "No hagas referencias bidireccionales sin @JsonIgnore o @JsonManagedReference para evitar bucles infinitos en JSON"
+      ],
+      "key_annotations_or_keywords": [
+        {"name": "@Entity", "description": "Le avisa a Spring: 'Soy una tabla de base de datos relacional'."},
+        {"name": "@Id", "description": "Marca el campo como la clave primaria (Primary Key)."},
+        {"name": "@GeneratedValue", "description": "Configura la generación automática del ID (Identity, Sequence, UUID)."},
+        {"name": "@Column", "description": "Personaliza nombre de columna, restricciones de nulidad o longitud."}
+      ],
+      "educational_tip": "Un modelo debe mantenerse como un POJO (Plain Old Java Object) representacional. Las validaciones de negocio van a services/ y el acceso a BD a repositories/."
+    },
+    "repositories": {
+      "folder_name": "repositories/",
+      "layer_name": "Capa de Acceso a Datos (Persistencia)",
+      "description_simple": "Aquí se declaran las interfaces para interactuar con la base de datos. Spring Data JPA genera automáticamente las consultas SQL sin que tengas que escribirlas a mano.",
+      "expected_contents": "Interfaces que extienden de JpaRepository<Entidad, TipoID> o CrudRepository.",
+      "architecture_role": "Abstracción del almacenamiento y ejecución de consultas derivadas o personalizadas (@Query).",
+      "naming_conventions": [
+        "PascalCase con sufijo Repository (Ej: EmployeeRepository.java, DepartmentRepository.java)",
+        "Siempre como interfaz Java (interface, no class)"
+      ],
+      "anti_patterns": [
+        "No implementes la interfaz a mano salvo casos de consultas sumamente complejas",
+        "No devuelvas vistas HTML ni llames a servicios desde un repositorio"
+      ],
+      "key_annotations_or_keywords": [
+        {"name": "@Repository", "description": "Marca el componente como repositorio de persistencia (opcional si hereda de JpaRepository)."},
+        {"name": "JpaRepository<T, ID>", "description": "Provee métodos como findAll(), findById(), save(), delete()."},
+        {"name": "@Query", "description": "Permite escribir consultas JPQL o SQL nativo específicas."}
+      ],
+      "educational_tip": "Aprovecha los 'Query Methods' derivados de Spring Data: findByDepartmentIdAndStatus(id, status) genera el SQL perfecto sin escribir código."
+    },
+    "services": {
+      "folder_name": "services/",
+      "layer_name": "Capa de Reglas de Negocio",
+      "description_simple": "Aquí vive el cerebro de la aplicación. Todo cálculo, validación (por ejemplo, verificar si un empleado ya está registrado o tiene contrato activo) y coordinación de operaciones se realiza aquí.",
+      "expected_contents": "Clases anotadas con @Service, inyectando los repositorios necesarios y encapsulando transacciones.",
+      "architecture_role": "Aplica las reglas y flujos de negocio garantizando la integridad de datos entre el controlador y la base de datos.",
+      "naming_conventions": [
+        "PascalCase con sufijo Service (Ej: EmployeeService.java, AuthService.java)",
+        "Opcionalmente interface EmployeeService y clase EmployeeServiceImpl"
+      ],
+      "anti_patterns": [
+        "No manejes directamente objetos HttpServletRequest o respuestas HTTP en el servicio",
+        "No dejes operaciones mutantes sin la anotación @Transactional"
+      ],
+      "key_annotations_or_keywords": [
+        {"name": "@Service", "description": "Indica a Spring que la clase contiene la lógica de negocio y debe gestionarse como Bean."},
+        {"name": "@Transactional", "description": "Garantiza que si ocurre un error, todos los cambios en la BD se reviertan (Rollback)."},
+        {"name": "@Autowired", "description": "Inyecta dependencias (preferiblemente mediante inyección por constructor)."}
+      ],
+      "educational_tip": "Usa inyección de dependencias por constructor en lugar de @Autowired sobre el atributo. Esto facilita pruebas unitarias con JUnit y Mockito."
+    },
+    "config": {
+      "folder_name": "config/",
+      "layer_name": "Capa de Configuración e Infraestructura",
+      "description_simple": "Aquí se configuran los aspectos globales del proyecto: seguridad (JWT/OAuth), CORS, beans de librerías de terceros y swagger/OpenAPI.",
+      "expected_contents": "Clases anotadas con @Configuration y métodos con @Bean.",
+      "architecture_role": "Ajustes de entorno, filtros de peticiones y preparación de beans del contenedor de Spring.",
+      "naming_conventions": [
+        "PascalCase con sufijo Config (Ej: SecurityConfig.java, CorsConfig.java, OpenApiConfig.java)"
+      ],
+      "anti_patterns": [
+        "No pongas lógica de negocio ni llamadas a base de datos en las clases de configuración"
+      ],
+      "key_annotations_or_keywords": [
+        {"name": "@Configuration", "description": "Le dice a Spring que esta clase contiene definiciones de beans de inicialización."},
+        {"name": "@Bean", "description": "Expone un objeto administrado por el ciclo de vida de Spring."}
+      ],
+      "educational_tip": "Mantén las configuraciones separadas por responsabilidad: una clase para Cors, otra para Security, otra para Swagger."
+    },
+    "dto": {
+      "folder_name": "dto/",
+      "layer_name": "Capa de Transferencia de Datos",
+      "description_simple": "Data Transfer Objects: Clases simples para enviar y recibir datos en los endpoints sin exponer las entidades de base de datos directamente al exterior.",
+      "expected_contents": "Java Records o POJOs con validaciones de Hibernate Validator (@NotNull, @Email).",
+      "architecture_role": "Desacopla la API pública de la estructura interna de la base de datos.",
+      "naming_conventions": [
+        "PascalCase con sufijo DTO o Request/Response (Ej: EmployeeRequestDTO.java, EmployeeResponseDTO.java)"
+      ],
+      "anti_patterns": [
+        "No expongas campos confidenciales (contraseñas encriptadas, tokens) en los DTO de salida"
+      ],
+      "key_annotations_or_keywords": [
+        {"name": "@Valid", "description": "Dispara la validación automática de atributos en el controlador."},
+        {"name": "@NotNull / @NotBlank", "description": "Reglas de validación declarativa de datos recibidos."}
+      ],
+      "educational_tip": "En Java 17+, usa 'record' para tus DTOs. Son inmutables por defecto, concisos y no requieren getters manuales."
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "framework": "Laravel",
+  "version": "11.x",
+  "architecture_type": "Modelo-Vista-Controlador (MVC)",
+  "root_package_pattern": "app/",
+  "folders": {
+    "controllers": {
+      "folder_name": "app/Http/Controllers/",
+      "layer_name": "Capa de Controladores HTTP",
+      "description_simple": "Aquí residen las clases que reciben las peticiones de los navegadores o APIs, validan la entrada y orquestan la respuesta.",
+      "expected_contents": "Clases PHP que heredan de Controller con métodos index, store, show, update, destroy.",
+      "architecture_role": "Punto de entrada de peticiones tras pasar por el routing y middleware.",
+      "naming_conventions": ["PascalCase con sufijo Controller (Ej: UserController.php, ProductController.php)"],
+      "anti_patterns": ["No ejecutes consultas complejas de base de datos directamente en el controlador, usa Models o Services."],
+      "key_annotations_or_keywords": [
+        {"name": "Request $request", "description": "Inyecta los parámetros enviados por el usuario."},
+        {"name": "response()->json()", "description": "Formatea una respuesta como JSON para APIs."}
+      ],
+      "educational_tip": "Usa Form Requests (php artisan make:request) para separar la validación de tus controladores."
+    },
+    "models": {
+      "folder_name": "app/Models/",
+      "layer_name": "Capa de Modelos Eloquent (ORM)",
+      "description_simple": "Cada modelo representa una tabla en la base de datos MySQL o PostgreSQL usando el ORM Eloquent.",
+      "expected_contents": "Clases PHP que heredan de Illuminate\\Database\\Eloquent\\Model.",
+      "architecture_role": "Mapeo objeto-relacional, definición de relaciones (hasMany, belongsTo) y scopes.",
+      "naming_conventions": ["PascalCase en singular (Ej: User.php, Order.php, Article.php)"],
+      "anti_patterns": ["No olvides definir $fillable para protegerte de asignación masiva insegura."],
+      "key_annotations_or_keywords": [
+        {"name": "$fillable", "description": "Lista blanca de atributos que se pueden asignar en masa."},
+        {"name": "hasMany / belongsTo", "description": "Métodos que declaran relaciones entre tablas."}
+      ],
+      "educational_tip": "La convención de nombres de Laravel asume que el modelo 'Flight' se guarda en la tabla 'flights'. Si usas inglés, te ahorras configurar nombres de tabla manualmente."
+    },
+    "routes": {
+      "folder_name": "routes/",
+      "layer_name": "Capa de Enrutamiento",
+      "description_simple": "Aquí defines qué URL responde y qué controlador debe ejecutarse cuando un usuario visita una dirección.",
+      "expected_contents": "Archivos web.php (páginas con sesión/cookies) y api.php (endpoints REST stateless).",
+      "architecture_role": "Distribuidor de tráfico HTTP.",
+      "naming_conventions": ["Archivos PHP en minúsculas (web.php, api.php, console.php)"],
+      "anti_patterns": ["No coloques funciones anónimas enormes con lógica dentro de routes. Delega a controladores."],
+      "key_annotations_or_keywords": [
+        {"name": "Route::get / Route::post", "description": "Declara una ruta HTTP accesible."},
+        {"name": "Route::apiResource", "description": "Crea automáticamente las 5 rutas CRUD estándar."}
+      ],
+      "educational_tip": "Mantén routes/ limpio usando controladores de una sola acción o recursos REST estándar."
+    }
+  }
+}

@@ -35,3 +35,7 @@ npm-debug.log*
 # Coverage
 coverage/
 .nyc_output/
+
+# Next.js & SQLite database
+.next/
+*.db

@@ -1,0 +1,36 @@
+{
+  "framework": "Django",
+  "version": "5.x",
+  "architecture_type": "Modelo-Template-Vista (MTV)",
+  "root_package_pattern": "",
+  "folders": {
+    "views": {
+      "folder_name": "views.py o views/",
+      "layer_name": "Capa de Vistas / Controladores (View en MTV)",
+      "description_simple": "En Django, la 'Vista' equivale a los controladores de otros frameworks: recibe la petición HttpRequest y retorna un HttpResponse o renderiza un HTML.",
+      "expected_contents": "Funciones basadas en vistas (FBV) o clases basadas en vistas (CBV).",
+      "architecture_role": "Procesamiento de peticiones, llamada al ORM y renderizado de templates o serializers.",
+      "naming_conventions": ["snake_case para funciones (def list_employees), PascalCase para CBV (class EmployeeListView)"],
+      "anti_patterns": ["No satures las vistas con queries complejas directas ni lógica que pueda ir en managers."],
+      "key_annotations_or_keywords": [
+        {"name": "@api_view (DRF)", "description": "Decora una vista para Django REST Framework."},
+        {"name": "render(request, ...)", "description": "Combina un template con un diccionario de contexto."}
+      ],
+      "educational_tip": "Prefiere Class-Based Views (CBV) como ListView o DetailView para código reusable y limpio."
+    },
+    "models": {
+      "folder_name": "models.py o models/",
+      "layer_name": "Capa de Modelos ORM",
+      "description_simple": "Define la estructura de tus tablas de base de datos usando clases Python.",
+      "expected_contents": "Clases que heredan de models.Model con campos como CharField, DateTimeField, ForeignKey.",
+      "architecture_role": "Definición del esquema y generación de migraciones automáticas.",
+      "naming_conventions": ["PascalCase en singular (class Employee(models.Model))"],
+      "anti_patterns": ["Nunca modifiques la base de datos a mano sin ejecutar python manage.py makemigrations."],
+      "key_annotations_or_keywords": [
+        {"name": "models.ForeignKey", "description": "Relación 1 a N con otra tabla."},
+        {"name": "def __str__(self)", "description": "Representación legible del objeto en el panel de administración."}
+      ],
+      "educational_tip": "Siempre implementa el método __str__ en tus modelos para que en el panel Django Admin se lean con claridad."
+    }
+  }
+}
