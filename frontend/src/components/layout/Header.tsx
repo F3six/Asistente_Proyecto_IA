@@ -37,7 +37,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
         </div>
       </div>
 
-      {/* Lado Derecho: Buscador Flexible + Perfil de Estudiante */}
+      {/* Lado Derecho: Buscador Flexible + Estado del Sistema (Acceso Libre sin autenticación) */}
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         <div className="relative flex items-center">
           <span className="material-symbols-outlined absolute left-2.5 sm:left-3 text-[#a098b0] text-[16px] sm:text-[18px]">
@@ -55,17 +55,10 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 pl-2 border-l border-[#262438]">
-          <div className="flex flex-col text-right hidden md:flex">
-            <span className="text-xs text-white font-semibold leading-tight">
-              Estudiante Ing.
-            </span>
-            <span className="text-[10px] text-[#00ffcc] font-medium font-mono">
-              Sistemas U.
-            </span>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff2d78] to-[#bf0059] flex items-center justify-center text-white ring-2 ring-[#ff2d78]/40 shadow-[0_0_8px_rgba(255,45,120,0.4)] shrink-0">
-            <span className="material-symbols-outlined text-[18px]">person</span>
+        <div className="flex items-center gap-2 pl-2 border-l border-[#262438]">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#141423] border border-[#2b2940] text-xs">
+            <span className="material-symbols-outlined text-[16px] text-[#00ffcc]">terminal</span>
+            <span className="font-mono text-[11px] text-[#e8e0f0]">Modo Libre</span>
           </div>
         </div>
       </div>

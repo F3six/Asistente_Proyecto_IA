@@ -42,7 +42,7 @@ export default function BitacoraPage() {
         root_cause: newCause,
         solution: newSolution,
         status: "verified",
-        resolved_by: "Estudiante Ing.",
+        resolved_by: "Equipo de Desarrollo",
       });
 
       setErrors([created, ...errors]);
@@ -386,7 +386,7 @@ export default function BitacoraPage() {
                   required
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="Ej: NoHandlerFoundException en /login"
+                  placeholder="Ej: NoHandlerFoundException en /api/empleados"
                   className="px-3 py-2 bg-[#0c0c16] border border-[#28253e] rounded-lg text-xs text-white placeholder:text-[#a098b0] focus:outline-none focus:border-[#ff2d78] focus:ring-1 focus:ring-[#ff2d78]"
                 />
               </div>
