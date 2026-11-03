@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -12,11 +12,13 @@ interface AppShellProps {
 export default function AppShell({ children }: AppShellProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  // Cerrar el drawer en móviles al navegar
-  useEffect(() => {
+  // Cerrar el drawer en móviles al navegar sin setState en effect
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setMobileSidebarOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a12] text-[#e8e0f0] flex flex-col relative overflow-x-hidden">

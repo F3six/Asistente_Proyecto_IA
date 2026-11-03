@@ -43,7 +43,7 @@ export interface TreeNode {
   is_misplaced?: boolean;
   warning_reason?: string;
   annotation?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AnalysisResponse {
@@ -115,3 +115,4 @@ export interface ProjectReport {
     verification_hash: string;
   };
 }
+

@@ -19,17 +19,13 @@ export default function BitacoraPage() {
   const [newSolution, setNewSolution] = useState("");
 
   useEffect(() => {
-    loadErrors();
+    let active = true;
+    api.getErrors().then((data) => {
+      if (active) setErrors(data);
+    }).catch(console.error);
+    return () => { active = false; };
   }, []);
 
-  const loadErrors = async () => {
-    try {
-      const data = await api.getErrors();
-      setErrors(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const handleCreateError = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -477,3 +473,7 @@ export default function BitacoraPage() {
     </div>
   );
 }
+
+
+
+
