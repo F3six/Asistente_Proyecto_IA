@@ -56,7 +56,7 @@ export default function ReportePage() {
   ];
 
   return (
-    <div className="flex flex-col w-full max-w-[1440px] mx-auto px-6 py-6">
+    <div className="flex flex-col w-full max-w-[1440px] mx-auto px-4 sm:px-6 py-6 overflow-x-hidden">
       {/* Sub-header & Action Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -100,7 +100,7 @@ export default function ReportePage() {
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#161629] text-white border border-[#00ffcc]/40 px-4 py-3 rounded-xl shadow-[0_0_20px_rgba(0,255,204,0.3)] text-xs font-medium animate-bounce">
+        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-2 bg-[#161629] text-white border border-[#00ffcc]/40 px-4 py-3 rounded-xl shadow-[0_0_20px_rgba(0,255,204,0.3)] text-xs font-medium animate-bounce">
           <span className="material-symbols-outlined text-[20px] text-[#00ffcc]">
             check_circle
           </span>
@@ -219,17 +219,17 @@ export default function ReportePage() {
             {/* Clean Interactive Architectural Diagram */}
             <div className="bg-[#0b0b14] border border-[#202034] rounded-xl p-4 flex flex-col gap-2">
               {/* Layer 1: Controllers */}
-              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between transition-all hover:border-[#ff2d78]/60 hover:shadow-[0_0_16px_rgba(255,45,120,0.25)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-[#ff2d78]/20 border border-[#ff2d78]/40 flex items-center justify-center text-[#ff2d78] font-mono text-xs font-bold shadow-[0_0_8px_rgba(255,45,120,0.3)]">
+              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between gap-3 transition-all hover:border-[#ff2d78]/60 hover:shadow-[0_0_16px_rgba(255,45,120,0.25)]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded bg-[#ff2d78]/20 border border-[#ff2d78]/40 flex items-center justify-center text-[#ff2d78] font-mono text-xs font-bold shadow-[0_0_8px_rgba(255,45,120,0.3)] shrink-0">
                     C1
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white leading-tight">Controladores</span>
-                    <span className="text-xs text-[#a098b0]">Puntos de Entrada HTTP REST (@RestController)</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-white leading-tight truncate">Controladores</span>
+                    <span className="text-xs text-[#a098b0] truncate">Puntos de Entrada HTTP REST (@RestController)</span>
                   </div>
                 </div>
-                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-[#ff2d78] font-medium">
+                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-[#ff2d78] font-medium shrink-0">
                   4 endpoints
                 </span>
               </div>
@@ -243,17 +243,17 @@ export default function ReportePage() {
               </div>
 
               {/* Layer 2: Services */}
-              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between transition-all hover:border-[#00ffcc]/60 hover:shadow-[0_0_16px_rgba(0,255,204,0.25)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-[#00ffcc]/20 border border-[#00ffcc]/40 flex items-center justify-center text-[#00ffcc] font-mono text-xs font-bold shadow-[0_0_8px_rgba(0,255,204,0.3)]">
+              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between gap-3 transition-all hover:border-[#00ffcc]/60 hover:shadow-[0_0_16px_rgba(0,255,204,0.25)]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded bg-[#00ffcc]/20 border border-[#00ffcc]/40 flex items-center justify-center text-[#00ffcc] font-mono text-xs font-bold shadow-[0_0_8px_rgba(0,255,204,0.3)] shrink-0">
                     S2
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white leading-tight">Servicios</span>
-                    <span className="text-xs text-[#a098b0]">Lógica de Negocio y Reglas Curriculares (@Service)</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-white leading-tight truncate">Servicios</span>
+                    <span className="text-xs text-[#a098b0] truncate">Lógica de Negocio y Reglas Curriculares (@Service)</span>
                   </div>
                 </div>
-                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-[#00ffcc] font-medium">
+                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-[#00ffcc] font-medium shrink-0">
                   5 servicios
                 </span>
               </div>
@@ -267,17 +267,17 @@ export default function ReportePage() {
               </div>
 
               {/* Layer 3: Repositories */}
-              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between transition-all hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(0,240,255,0.25)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold shadow-[0_0_8px_rgba(0,240,255,0.3)]">
+              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between gap-3 transition-all hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(0,240,255,0.25)]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold shadow-[0_0_8px_rgba(0,240,255,0.3)] shrink-0">
                     R3
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white leading-tight">Repositorios</span>
-                    <span className="text-xs text-[#a098b0]">Acceso a Datos y Consultas Derivadas (JpaRepository)</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-white leading-tight truncate">Repositorios</span>
+                    <span className="text-xs text-[#a098b0] truncate">Acceso a Datos y Consultas Derivadas (JpaRepository)</span>
                   </div>
                 </div>
-                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-cyan-300 font-medium">
+                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-cyan-300 font-medium shrink-0">
                   3 interfaces
                 </span>
               </div>
@@ -291,17 +291,17 @@ export default function ReportePage() {
               </div>
 
               {/* Layer 4: Models */}
-              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between transition-all hover:border-[#ffe04a]/60 hover:shadow-[0_0_16px_rgba(255,224,74,0.25)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-[#ffe04a]/20 border border-[#ffe04a]/40 flex items-center justify-center text-[#ffe04a] font-mono text-xs font-bold shadow-[0_0_8px_rgba(255,224,74,0.3)]">
+              <div className="bg-[#161629] border border-[#2d2c47] rounded-lg p-3 shadow-md flex items-center justify-between gap-3 transition-all hover:border-[#ffe04a]/60 hover:shadow-[0_0_16px_rgba(255,224,74,0.25)]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded bg-[#ffe04a]/20 border border-[#ffe04a]/40 flex items-center justify-center text-[#ffe04a] font-mono text-xs font-bold shadow-[0_0_8px_rgba(255,224,74,0.3)] shrink-0">
                     M4
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white leading-tight">Modelos / Entidades</span>
-                    <span className="text-xs text-[#a098b0]">Persistencia y Esquema Relacional (@Entity)</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-white leading-tight truncate">Modelos / Entidades</span>
+                    <span className="text-xs text-[#a098b0] truncate">Persistencia y Esquema Relacional (@Entity)</span>
                   </div>
                 </div>
-                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-[#ffe04a] font-medium">
+                <span className="font-mono text-xs bg-[#1f1f35] border border-[#343353] px-2 py-0.5 rounded text-[#ffe04a] font-medium shrink-0">
                   6 tablas
                 </span>
               </div>
@@ -400,9 +400,9 @@ export default function ReportePage() {
                     <span className="material-symbols-outlined text-[16px] text-[#ff2d78] shrink-0 mt-0.5">
                       subdirectory_arrow_right
                     </span>
-                    <div>
+                    <div className="min-w-0">
                       <span>Recomendación: </span>
-                      <span className="font-mono text-xs bg-[#0f0f1b] border border-[#2b2a44] px-1.5 py-0.5 rounded text-[#ff2d78] font-medium">
+                      <span className="font-mono text-xs bg-[#0f0f1b] border border-[#2b2a44] px-1.5 py-0.5 rounded text-[#ff2d78] font-medium break-all">
                         {f.recommended}
                       </span>
                     </div>

@@ -3,6 +3,14 @@ Script de verificación directa de los servicios de DevEdu Shell.
 Ejecuta pruebas sobre el reconocedor de frameworks, el glosario didáctico y el sugeridor de rutas.
 """
 
+import sys
+from pathlib import Path
+
+# Permitir ejecución directa independientemente del directorio actual
+BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 from backend.app.services.analyzer import FrameworkAnalyzer
 from backend.app.services.glossary_service import GlossaryService
 from backend.app.services.suggestion_service import SuggestionService

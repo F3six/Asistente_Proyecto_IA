@@ -67,7 +67,7 @@ export default function BitacoraPage() {
   const categories = ["all", "Database", "Routing", "Views", "Security"];
 
   return (
-    <div className="flex flex-col w-full max-w-[1440px] mx-auto px-6 py-6">
+    <div className="flex flex-col w-full max-w-[1440px] mx-auto px-4 sm:px-6 py-6 overflow-x-hidden">
       {/* Top Banner / Hero Card */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#131322] via-[#16162a] to-[#121220] border border-[#2b2742] p-6 shadow-xl mb-6">
         <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-[#ff2d78]/10 blur-3xl pointer-events-none" />
@@ -184,7 +184,7 @@ export default function BitacoraPage() {
                           Capa: {err.layer || "Controlador"}
                         </span>
                       </div>
-                      <h2 className="text-base sm:text-lg text-white font-semibold truncate group-hover:text-[#ff80aa] transition-colors">
+                      <h2 className="text-base sm:text-lg text-white font-semibold line-clamp-2 break-words group-hover:text-[#ff80aa] transition-colors">
                         {err.title}
                       </h2>
                     </div>
@@ -354,8 +354,8 @@ export default function BitacoraPage() {
 
       {/* Modal Dialog: Documentar Nuevo Error */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#121222] border border-[#2b2742] rounded-xl max-w-xl w-full p-6 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto relative">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+          <div className="bg-[#121222] border border-[#2b2742] rounded-xl max-w-xl w-full p-4 sm:p-6 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto relative my-auto">
             <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#ff2d78]/15 rounded-full blur-3xl pointer-events-none" />
             <div className="flex items-center justify-between pb-2 border-b border-[#232135]">
               <div className="flex items-center gap-2">
