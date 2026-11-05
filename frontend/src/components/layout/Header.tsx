@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -8,6 +8,31 @@ interface HeaderProps {
 
 export default function Header({ onToggleSidebar }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeProjectName, setActiveProjectName] = useState("Proyecto_Universidad_Final");
+  const [activeFramework, setActiveFramework] = useState("Spring Boot");
+
+  useEffect(() => {
+    const updateFromStorage = () => {
+      const stored = localStorage.getItem("devedu_active_project");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.project_name) setActiveProjectName(parsed.project_name);
+          if (parsed.framework) setActiveFramework(parsed.framework);
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    updateFromStorage();
+    window.addEventListener("projectChanged", updateFromStorage);
+    window.addEventListener("storage", updateFromStorage);
+    return () => {
+      window.removeEventListener("projectChanged", updateFromStorage);
+      window.removeEventListener("storage", updateFromStorage);
+    };
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-[#0c0c16]/90 backdrop-blur-xl border-b border-[#232135] z-30 flex items-center justify-between px-4 sm:px-6 shadow-md transition-all">
@@ -26,14 +51,14 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
         <div className="flex items-center gap-1.5 sm:gap-2 bg-[#151524] border border-[#2b2940] px-2.5 sm:px-3 py-1.5 rounded-md hover:border-[#ff2d78]/50 transition-colors cursor-pointer shrink-0">
           <span className="material-symbols-outlined text-[#ff2d78] text-[18px]">folder</span>
           <span className="font-mono text-xs text-[#e8e0f0] font-semibold tracking-tight max-w-[130px] sm:max-w-[180px] md:max-w-none truncate">
-            Proyecto_Universidad_Final
+            {activeProjectName}
           </span>
           <span className="material-symbols-outlined text-[#a098b0] text-[16px]">expand_more</span>
         </div>
 
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/30 text-[#00ffcc] text-xs shrink-0">
           <span className="w-2 h-2 rounded-full bg-[#00ffcc] shadow-[0_0_6px_#00ffcc] animate-pulse" />
-          <span className="font-semibold tracking-wide">Spring Boot</span>
+          <span className="font-semibold tracking-wide">{activeFramework}</span>
         </div>
       </div>
 
@@ -58,7 +83,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
         <div className="flex items-center gap-2 pl-2 border-l border-[#262438]">
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#141423] border border-[#2b2940] text-xs">
             <span className="material-symbols-outlined text-[16px] text-[#00ffcc]">terminal</span>
-            <span className="font-mono text-[11px] text-[#e8e0f0]">Modo Libre</span>
+            <span className="font-mono text-[11px] text-[#e8e0f0]">Modo Didáctico</span>
           </div>
         </div>
       </div>

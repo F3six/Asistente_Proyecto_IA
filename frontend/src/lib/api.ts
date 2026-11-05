@@ -27,21 +27,33 @@ async function fetchWithFallback<T>(url: string, options?: RequestInit, fallback
 
 export const api = {
   // Proyectos
-  async analyzeProject(projectName = "Proyecto_Universidad_Final", projectPath?: string): Promise<AnalysisResponse> {
+  async analyzeProject(
+    projectName = "Proyecto_Universidad_Final",
+    projectPath?: string,
+    filePaths?: string[]
+  ): Promise<AnalysisResponse> {
     return fetchWithFallback<AnalysisResponse>(
       "/api/projects/analyze",
       {
         method: "POST",
-        body: JSON.stringify({ project_name: projectName, project_path: projectPath }),
+        body: JSON.stringify({
+          project_name: projectName,
+          project_path: projectPath,
+          file_paths: filePaths,
+        }),
       },
-      // Datos de respaldo idénticos al mockup
+      // Datos de respaldo idénticos al mockup si no hay conexión al backend
       {
         project_name: projectName,
-        framework: "Spring Boot",
+        framework: filePaths && filePaths.some(p => p.includes("artisan") || p.includes("composer.json"))
+          ? "Laravel"
+          : filePaths && filePaths.some(p => p.includes("manage.py"))
+          ? "Django"
+          : "Spring Boot",
         version: "3.2.0",
         architecture_type: "Arquitectura en Capas (N-Tier)",
         alignment_score: 88,
-        total_files: 42,
+        total_files: filePaths ? filePaths.length : 42,
         misplaced_count: 2,
         active_layers: ["controllers", "models", "repositories", "services", "config"],
         misplaced_files: [

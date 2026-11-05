@@ -50,6 +50,7 @@ class TreeNode(BaseModel):
 class AnalysisRequest(BaseModel):
     project_path: Optional[str] = None
     project_name: Optional[str] = None
+    file_paths: Optional[List[str]] = None
     file_tree: Optional[List[dict]] = None
 
 

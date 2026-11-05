@@ -62,10 +62,14 @@ class FrameworkAnalyzer:
 
         if spring_score >= 1 or any(p.endswith(".java") for p in normalized):
             return "Spring Boot", "3.2.0", "Arquitectura en Capas (N-Tier)"
-        elif laravel_score >= 1 or any("artisan" in p for p in normalized):
+        elif laravel_score >= 1 or any("artisan" in p or "routes/web.php" in p for p in normalized):
             return "Laravel", "11.x", "Modelo-Vista-Controlador (MVC)"
-        elif django_score >= 1 or any("manage.py" in p for p in normalized):
+        elif django_score >= 1 or any("manage.py" in p or "settings.py" in p for p in normalized):
             return "Django", "5.x", "Modelo-Template-Vista (MTV)"
+        elif any("package.json" in p for p in normalized):
+            return "Node.js / Express", "20.x", "Arquitectura Modular REST"
+        elif paths:
+            return "Proyecto Personalizado", "1.0", "Estructura Genérica de Código"
 
         # Por defecto Spring Boot como educativo
         return "Spring Boot", "3.2.0", "Arquitectura en Capas (N-Tier)"
@@ -197,22 +201,23 @@ class FrameworkAnalyzer:
 
     @classmethod
     def _build_mock_or_real_tree(cls, file_paths: List[str], misplaced_list: List[MisplacedFileDetail]) -> List[TreeNode]:
-        """Genera nodos de árbol para la interfaz."""
+        """Genera nodos de árbol para la interfaz reflejando los archivos y carpetas reales."""
         misplaced_names = {m.file_name: m.reason for m in misplaced_list}
 
-        # Estructura organizada por capas
-        layers_map: Dict[str, List[TreeNode]] = {
-            "controllers": [],
-            "models": [],
-            "repositories": [],
-            "services": [],
-            "config": [],
-            "otros": []
-        }
+        # Agrupar archivos según su carpeta contenedora real
+        folders_dict: Dict[str, Dict[str, Any]] = {}
 
         for path in file_paths:
-            normalized = path.replace("\\", "/")
-            file_name = normalized.split("/")[-1]
+            normalized = path.replace("\\", "/").strip("/")
+            parts = normalized.split("/")
+            file_name = parts[-1]
+            if len(parts) > 1:
+                folder_name = parts[-2]
+                folder_path = "/".join(parts[:-1])
+            else:
+                folder_name = "raíz"
+                folder_path = "."
+
             is_mis = file_name in misplaced_names
             warning = misplaced_names.get(file_name)
 
@@ -224,26 +229,23 @@ class FrameworkAnalyzer:
                 warning_reason=warning
             )
 
-            placed = False
-            for layer in ["controllers", "models", "repositories", "services", "config"]:
-                if f"/{layer}/" in f"/{normalized}/":
-                    layers_map[layer].append(node)
-                    placed = True
-                    break
-
-            if not placed:
-                layers_map["otros"].append(node)
+            if folder_name not in folders_dict:
+                folders_dict[folder_name] = {
+                    "path": folder_path,
+                    "layer": folder_name.lower(),
+                    "files": []
+                }
+            folders_dict[folder_name]["files"].append(node)
 
         tree = []
-        for layer, children in layers_map.items():
-            if children:
-                tree.append(TreeNode(
-                    name=f"{layer}/",
-                    path=f"src/main/java/com/universidad/{layer}",
-                    type="folder",
-                    layer=layer,
-                    children=children
-                ))
+        for folder_name, data in folders_dict.items():
+            tree.append(TreeNode(
+                name=f"{folder_name}/" if folder_name != "raíz" else "Archivos en raíz/",
+                path=data["path"],
+                type="folder",
+                layer=data["layer"],
+                children=data["files"]
+            ))
 
         return tree
 

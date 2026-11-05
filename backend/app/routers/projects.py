@@ -24,7 +24,9 @@ async def analyze_project(
     """
     project_name = payload.project_name or "Proyecto_Universidad_Final"
 
-    if payload.project_path:
+    if payload.file_paths:
+        scanned_files = payload.file_paths
+    elif payload.project_path:
         scanned_files = FrameworkAnalyzer.scan_directory(payload.project_path)
     elif payload.file_tree:
         scanned_files = [f.get("path", "") for f in payload.file_tree if f.get("path")]
