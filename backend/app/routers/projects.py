@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import zipfile
+import io
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
@@ -117,6 +119,36 @@ async def analyze_project(
         await db.refresh(project)
         analysis.project_id = project.id
 
+    return analysis
+
+
+@router.post("/upload-zip", response_model=AnalysisResponse, summary="Sube y analiza un archivo ZIP de un proyecto")
+async def upload_project_zip(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Descomprime un archivo ZIP de un proyecto en memoria,
+    filtra archivos irrelevantes, detecta el framework y analiza la estructura.
+    """
+    project_name = file.filename.rsplit(".", 1)[0] if file.filename else "Proyecto_Subido"
+    content = await file.read()
+
+    file_paths = []
+    ignored = [".git", "node_modules", "target", ".gradle", "build", "dist", ".idea", ".vscode", "__pycache__", "venv", ".venv", ".next", ".bin"]
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as z:
+            for item in z.namelist():
+                if item.endswith("/"):
+                    continue
+                parts = item.split("/")
+                if any(p in ignored for p in parts):
+                    continue
+                file_paths.append(item)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"No se pudo procesar el archivo ZIP: {str(e)}")
+
+    analysis = FrameworkAnalyzer.analyze(project_name=project_name, file_paths=file_paths)
     return analysis
 
 

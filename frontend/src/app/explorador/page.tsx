@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { api } from "@/lib/api";
-import { AnalysisResponse, TreeNode, MisplacedFileDetail } from "@/lib/types";
+import { useState, useRef } from "react";
+import { useProject } from "@/context/ProjectContext";
+import { MisplacedFileDetail } from "@/lib/types";
 
-// Base de conocimiento didáctica multipropósito para los frameworks soportados
+// Base de conocimiento didáctica para los frameworks soportados
 const FRAMEWORK_GLOSSARY: Record<
   string,
   Record<
@@ -62,7 +62,7 @@ const FRAMEWORK_GLOSSARY: Record<
       badge: "Spring Data JPA: Acceso a BD",
       layer: "Capa de Persistencia",
       simpleExplanation:
-        "Interfaces que extienden de JpaRepository. Spring genera automáticamente las sentencias SQL (SELECT, INSERT, UPDATE, DELETE) en tiempo de ejecución sin escribirlas a mano.",
+        "Interfaces que extienden de JpaRepository. Spring genera automáticamente las sentencias SQL en tiempo de ejecución sin escribirlas a mano.",
       conventions: {
         good: "Nombre con sufijo Repository: EmployeeRepository.java",
         bad: "No crear clases normales sino interfaces: interface EmployeeRepo",
@@ -142,7 +142,7 @@ const FRAMEWORK_GLOSSARY: Record<
         { name: "$fillable", desc: "Lista blanca de campos con asignación masiva permitida." },
         { name: "hasMany / belongsTo", desc: "Métodos de relación entre tablas." },
       ],
-      tip: "Define siempre $fillable en tus modelos para proteger la base de datos contra ataques de mass assignment.",
+      tip: "Define siempre $fillable en tus modelos para proteger la base de datos contra asignaciones masivas no deseadas.",
     },
     routes: {
       title: "routes/",
@@ -201,144 +201,39 @@ const FRAMEWORK_GLOSSARY: Record<
 };
 
 export default function ExploradorPage() {
-  const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
+  const {
+    project,
+    uploadFolder,
+    uploadZip,
+    loadSample,
+    clearProject,
+    isLoading,
+    notification,
+  } = useProject();
+
   const [selectedFolder, setSelectedFolder] = useState<string>("models");
   const [filterQuery, setFilterQuery] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showManualInput, setShowManualInput] = useState<boolean>(false);
-  const [manualPathInput, setManualPathInput] = useState<string>("");
-  const [notification, setNotification] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const zipInputRef = useRef<HTMLInputElement>(null);
 
-  // Intentar cargar proyecto previamente guardado al iniciar
-  useEffect(() => {
-    const saved = localStorage.getItem("devedu_active_project");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setAnalysis(parsed);
-        if (parsed.structure && parsed.structure.length > 0) {
-          const firstFolder = parsed.structure[0].name.replace("/", "").toLowerCase();
-          setSelectedFolder(firstFolder);
-        }
-      } catch {
-        // En blanco si no hay datos válidos
-      }
-    }
-  }, []);
-
-  const showToast = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 3500);
-  };
-
-  // Manejador para elegir carpeta local desde el computador del usuario
-  const handleFolderSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsLoading(true);
-    try {
-      const firstRelativePath = files[0].webkitRelativePath || files[0].name;
-      const rootFolderName = firstRelativePath.split("/")[0] || "Proyecto_Local";
-
-      const ignoredDirs = [
-        "node_modules",
-        ".git",
-        ".next",
-        "target",
-        ".gradle",
-        "build",
-        "dist",
-        ".idea",
-        ".vscode",
-        "__pycache__",
-        "venv",
-        ".venv",
-        ".bin",
-      ];
-
-      const relativePaths: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const relPath = files[i].webkitRelativePath;
-        if (!relPath) continue;
-
-        // Omitir carpetas de dependencias y compilados
-        const parts = relPath.split("/");
-        if (parts.some((p) => ignoredDirs.includes(p))) {
-          continue;
-        }
-
-        // Ruta relativa respecto a la raíz del proyecto
-        const pathWithoutRoot = parts.slice(1).join("/");
-        if (pathWithoutRoot) {
-          relativePaths.push(pathWithoutRoot);
-        }
-      }
-
-      const result = await api.analyzeProject(rootFolderName, undefined, relativePaths);
-      setAnalysis(result);
-      localStorage.setItem("devedu_active_project", JSON.stringify(result));
-      window.dispatchEvent(new Event("projectChanged"));
-
-      if (result.structure && result.structure.length > 0) {
-        const initial = result.structure[0].name.replace("/", "").toLowerCase();
-        setSelectedFolder(initial);
-      }
-
-      showToast(`Proyecto "${rootFolderName}" cargado: Framework detectado "${result.framework}".`);
-    } catch (err) {
-      console.error(err);
-      showToast("Error al analizar la carpeta seleccionada.");
-    } finally {
-      setIsLoading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+  // Manejador selección de carpeta local
+  const handleFolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      uploadFolder(e.target.files);
     }
   };
 
-  // Carga didáctica de ejemplo para demostración rápida
-  const handleLoadSample = async () => {
-    setIsLoading(true);
-    try {
-      const sample = await api.analyzeProject("Proyecto_Universidad_Final");
-      setAnalysis(sample);
-      localStorage.setItem("devedu_active_project", JSON.stringify(sample));
-      window.dispatchEvent(new Event("projectChanged"));
-      setSelectedFolder("models");
-      showToast("Proyecto de ejemplo Spring Boot cargado con éxito.");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+  // Manejador archivo ZIP
+  const handleZipChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      uploadZip(e.target.files[0]);
     }
   };
 
-  // Análisis por ruta en disco ingresada manualmente
-  const handleAnalyzeManualPath = async () => {
-    if (!manualPathInput.trim()) return;
-    setIsLoading(true);
-    try {
-      const folderName = manualPathInput.replace(/\\/g, "/").split("/").filter(Boolean).pop() || "Proyecto_Local";
-      const result = await api.analyzeProject(folderName, manualPathInput.trim());
-      setAnalysis(result);
-      localStorage.setItem("devedu_active_project", JSON.stringify(result));
-      window.dispatchEvent(new Event("projectChanged"));
-      setShowManualInput(false);
-      showToast(`Ruta analizada correctamente: ${result.framework} detectado.`);
-    } catch (err) {
-      console.error(err);
-      showToast("No se pudo leer la ruta especificada. Verifica que exista.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Obtener explicación pedagógica de la carpeta activa
-  const currentFramework = analysis?.framework || "Spring Boot";
-  const frameworkGlossary = FRAMEWORK_GLOSSARY[currentFramework] || FRAMEWORK_GLOSSARY["Spring Boot"];
+  const currentFramework = project?.framework || "Spring Boot";
+  const frameworkGlossary =
+    FRAMEWORK_GLOSSARY[currentFramework] || FRAMEWORK_GLOSSARY["Spring Boot"];
 
   const activeExplanation =
     frameworkGlossary[selectedFolder.toLowerCase()] ||
@@ -358,8 +253,7 @@ export default function ExploradorPage() {
       tip: "Verifica que cada archivo tenga una única responsabilidad bien delimitada.",
     };
 
-  // Filtrar árbol de directorios según texto de búsqueda
-  const filteredStructure = (analysis?.structure || []).filter((folder) => {
+  const filteredStructure = (project?.structure || []).filter((folder) => {
     if (!filterQuery) return true;
     const matchesFolder = folder.name.toLowerCase().includes(filterQuery.toLowerCase());
     const matchesFiles = folder.children?.some((f) =>
@@ -368,8 +262,7 @@ export default function ExploradorPage() {
     return matchesFolder || matchesFiles;
   });
 
-  // Obtener archivos reales de la carpeta seleccionada actualmente
-  const activeFolderNode = analysis?.structure?.find(
+  const activeFolderNode = project?.structure?.find(
     (node) => node.name.replace("/", "").toLowerCase() === selectedFolder.toLowerCase()
   );
   const currentFiles = activeFolderNode?.children || [];
@@ -384,20 +277,27 @@ export default function ExploradorPage() {
         </div>
       )}
 
-      {/* Input nativo oculto para selección de directorio local */}
+      {/* Inputs nativos ocultos */}
       <input
         type="file"
-        ref={fileInputRef}
-        // @ts-expect-error - webkitdirectory es un atributo no estándar de HTML5 soportado por todos los navegadores modernos
+        ref={folderInputRef}
+        // @ts-expect-error - webkitdirectory
         webkitdirectory=""
         directory=""
         multiple
         className="hidden"
-        onChange={handleFolderSelect}
+        onChange={handleFolderChange}
+      />
+      <input
+        type="file"
+        ref={zipInputRef}
+        accept=".zip"
+        className="hidden"
+        onChange={handleZipChange}
       />
 
-      {/* Barra de Control de Producción: Elegir Proyecto de mi Computador */}
-      <div className="bg-[#121220] border border-[#262438] rounded-xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl relative overflow-hidden">
+      {/* Barra de Control y Acciones */}
+      <div className="bg-[#121220] border border-[#262438] rounded-xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ff2d78] to-[#99004d] flex items-center justify-center text-white shadow-[0_0_12px_rgba(255,45,120,0.4)] shrink-0">
             <span className="material-symbols-outlined text-[22px]">snippet_folder</span>
@@ -405,128 +305,148 @@ export default function ExploradorPage() {
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-white truncate">
-                {analysis ? analysis.project_name : "Ningún proyecto cargado"}
+                {project ? project.project_name : "Ningún proyecto cargado"}
               </span>
-              {analysis && (
+              {project && (
                 <span className="px-2 py-0.5 rounded-full bg-[#00ffcc]/15 border border-[#00ffcc]/40 text-[#00ffcc] text-[10px] font-semibold shrink-0">
-                  {analysis.framework}
+                  {project.framework}
                 </span>
               )}
             </div>
             <span className="text-xs text-[#a098b0] truncate">
-              {analysis
-                ? `${analysis.total_files} archivos auditados según estructura real`
-                : "Elige un proyecto local en tu equipo para iniciar el análisis didáctico"}
+              {project
+                ? `${project.total_files} archivos auditados según la estructura real`
+                : "Sube un archivo ZIP o elige una carpeta de tu PC para habilitar las funciones"}
             </span>
           </div>
         </div>
 
-        {/* Botones de Acción */}
+        {/* Botones de Carga */}
         <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto justify-end">
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => folderInputRef.current?.click()}
             disabled={isLoading}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#ff2d78] to-[#d6005c] hover:brightness-110 text-white font-semibold text-xs transition-all shadow-[0_0_14px_rgba(255,45,120,0.4)] border border-[#ff6699]/40 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">
               {isLoading ? "hourglass_empty" : "folder_open"}
             </span>
-            <span>{isLoading ? "Analizando..." : "Elegir Proyecto de mi PC"}</span>
+            <span>{isLoading ? "Analizando..." : "Elegir Carpeta de mi PC"}</span>
           </button>
 
           <button
-            onClick={handleLoadSample}
+            onClick={() => zipInputRef.current?.click()}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#18182b] border border-[#2e2a44] hover:border-[#ff2d78] hover:text-[#ff2d78] text-[#e8e0f0] text-xs font-semibold transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px]">folder_zip</span>
+            <span>Subir ZIP</span>
+          </button>
+
+          <button
+            onClick={loadSample}
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#18182b] border border-[#2e2a44] hover:border-[#00ffcc] hover:text-[#00ffcc] text-[#e8e0f0] text-xs font-semibold transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px] text-[#00ffcc]">bolt</span>
-            <span>Cargar Ejemplo</span>
+            <span>Probar Ejemplo</span>
           </button>
 
-          <button
-            onClick={() => setShowManualInput(!showManualInput)}
-            className="p-2 rounded-lg bg-[#18182b] border border-[#2e2a44] text-[#a098b0] hover:text-white transition-all cursor-pointer"
-            title="Ingresar ruta de disco manualmente"
-          >
-            <span className="material-symbols-outlined text-[18px]">drive_file_move</span>
-          </button>
+          {project && (
+            <button
+              onClick={clearProject}
+              className="p-2 rounded-lg bg-[#18182b] border border-[#2e2a44] text-[#a098b0] hover:text-[#ff2d78] transition-all cursor-pointer"
+              title="Descargar proyecto actual"
+            >
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Input de Ruta Local Manual (Desplegable) */}
-      {showManualInput && (
-        <div className="bg-[#10101c] border border-[#2d2945] rounded-xl p-3 flex flex-col sm:flex-row gap-2 items-center">
-          <span className="text-xs text-[#a098b0] shrink-0 font-mono">Ruta local:</span>
-          <input
-            type="text"
-            value={manualPathInput}
-            onChange={(e) => setManualPathInput(e.target.value)}
-            placeholder="Ej: C:\Proyectos\mi-proyecto-spring  o  /home/usuario/app-laravel"
-            className="flex-1 w-full bg-[#161628] border border-[#302c48] px-3 py-1.5 rounded-lg text-xs text-white placeholder:text-[#a098b0] focus:outline-none focus:border-[#ff2d78]"
-          />
-          <button
-            onClick={handleAnalyzeManualPath}
-            disabled={isLoading}
-            className="w-full sm:w-auto px-4 py-1.5 bg-[#ff2d78] text-white rounded-lg text-xs font-semibold hover:bg-[#d6005c] transition-all cursor-pointer shrink-0"
-          >
-            Escanear
-          </button>
-        </div>
-      )}
-
-      {/* Estado "En Blanco" cuando no hay proyecto seleccionado */}
-      {!analysis && !isLoading && (
-        <div className="bg-[#0f0f1a] border border-[#262438] rounded-xl p-10 flex flex-col items-center justify-center text-center gap-4 shadow-xl">
+      {/* ESTADO EN BLANCO: Cuando la app inicia vacía sin proyecto */}
+      {!project && !isLoading && (
+        <div className="bg-[#0f0f1a] border border-[#262438] rounded-xl p-10 flex flex-col items-center justify-center text-center gap-5 shadow-xl">
           <div className="w-16 h-16 rounded-2xl bg-[#141424] border border-[#2f2b47] flex items-center justify-center text-[#ff2d78] shadow-[0_0_20px_rgba(255,45,120,0.3)]">
-            <span className="material-symbols-outlined text-[36px]">folder_special</span>
+            <span className="material-symbols-outlined text-[36px]">upload_file</span>
           </div>
-          <div className="max-w-md flex flex-col gap-1.5">
-            <h2 className="text-lg font-bold text-white">Listo para Analizar un Proyecto</h2>
-            <p className="text-xs text-[#a098b0] leading-relaxed">
-              Selecciona una carpeta desde tu computadora para que DevEdu Shell reconozca el framework (Spring Boot, Laravel o Django), identifique sus capas y audite su orden según los archivos que contiene.
+
+          <div className="max-w-lg flex flex-col gap-2">
+            <h2 className="text-xl font-bold text-white font-headline">
+              Bienvenido a DevEdu Shell — Plataforma Didáctica
+            </h2>
+            <p className="text-xs sm:text-sm text-[#a098b0] leading-relaxed">
+              La aplicación se encuentra en blanco y lista para recibir tu proyecto. Sube un archivo ZIP o selecciona la carpeta de tu código para que el sistema reconozca automáticamente el framework, sus tecnologías y genere el esquema interactivo de aprendizaje.
             </p>
           </div>
+
           <div className="flex items-center gap-3 mt-2 flex-wrap justify-center">
             <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff2d78] to-[#d6005c] text-white font-semibold text-xs shadow-[0_0_16px_rgba(255,45,120,0.45)] hover:brightness-110 transition-all cursor-pointer"
+              onClick={() => folderInputRef.current?.click()}
+              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff2d78] to-[#d6005c] text-white font-semibold text-xs shadow-[0_0_16px_rgba(255,45,120,0.45)] hover:brightness-110 transition-all cursor-pointer flex items-center gap-2"
             >
-              Seleccionar Carpeta en este Equipo
+              <span className="material-symbols-outlined text-[18px]">folder_open</span>
+              <span>Elegir Carpeta de mi PC</span>
             </button>
+
             <button
-              onClick={handleLoadSample}
-              className="px-4 py-2.5 rounded-lg bg-[#18182b] border border-[#2b2742] text-white text-xs font-semibold hover:border-[#00ffcc] hover:text-[#00ffcc] transition-all cursor-pointer"
+              onClick={() => zipInputRef.current?.click()}
+              className="px-4 py-2.5 rounded-lg bg-[#18182b] border border-[#2b2742] text-white text-xs font-semibold hover:border-[#ff2d78] hover:text-[#ff2d78] transition-all cursor-pointer flex items-center gap-1.5"
             >
-              Probar con Proyecto de Ejemplo
+              <span className="material-symbols-outlined text-[18px]">folder_zip</span>
+              <span>Subir Archivo ZIP</span>
+            </button>
+
+            <button
+              onClick={loadSample}
+              className="px-4 py-2.5 rounded-lg bg-[#18182b] border border-[#2b2742] text-white text-xs font-semibold hover:border-[#00ffcc] hover:text-[#00ffcc] transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[18px] text-[#00ffcc]">bolt</span>
+              <span>Cargar Proyecto de Ejemplo</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Vista Principal Activa cuando hay proyecto analizado */}
-      {analysis && (
+      {/* VISTA ACTIVA: Cuando hay un proyecto analizado */}
+      {project && (
         <>
-          {/* Top Context & Architectural Health Banner */}
+          {/* Banner de Framework y Tecnologías Detectadas */}
           <div className="relative overflow-hidden rounded-xl bg-[#0f0f1a] border border-[#262438] shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-4 sm:p-6">
             <div className="absolute -right-12 -top-12 w-64 h-64 bg-[#ff2d78]/15 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute right-48 -bottom-16 w-52 h-52 bg-[#00ffcc]/15 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="flex flex-col gap-1 max-w-2xl min-w-0">
+              <div className="flex flex-col gap-2 max-w-2xl min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="px-2.5 py-0.5 rounded bg-[#ff2d78]/20 text-[#ff2d78] border border-[#ff2d78]/50 text-xs uppercase tracking-wider font-bold shadow-[0_0_8px_rgba(255,45,120,0.3)]">
-                    {analysis.framework}
+                    {project.framework}
                   </span>
                   <span className="text-[#a098b0] font-mono text-xs">
-                    {analysis.version || "Detectado"} • {analysis.architecture_type}
+                    {project.version || "Detectado"} • {project.architecture_type}
                   </span>
                 </div>
+
                 <h1 className="text-xl sm:text-2xl lg:text-3xl text-white font-extrabold tracking-tight font-headline">
                   Explorador Didáctico de Estructura
                 </h1>
-                <p className="text-xs sm:text-sm text-[#a098b0] leading-relaxed">
-                  Representación directa de las carpetas y archivos de tu proyecto local. Aprende el propósito de cada sector sin necesidad de compilar.
-                </p>
+
+                {/* Tecnologías Detectadas */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                  <span className="text-[11px] text-[#a098b0] uppercase tracking-wider font-semibold mr-1">
+                    Tecnologías:
+                  </span>
+                  {(project.technologies || ["Arquitectura Modular", "Controladores", "Vistas"]).map(
+                    (tech) => (
+                      <span
+                        key={tech}
+                        className="px-2 py-0.5 rounded bg-[#16162a] border border-[#2b2742] text-[#00ffcc] text-[11px] font-mono"
+                      >
+                        {tech}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
 
               {/* Indicadores Clave de Alineación */}
@@ -538,7 +458,7 @@ export default function ExploradorPage() {
                       Alineación
                     </span>
                     <span className="text-base text-[#00ffcc] font-bold leading-tight font-mono">
-                      {analysis.alignment_score}%
+                      {project.alignment_score}%
                     </span>
                   </div>
                 </div>
@@ -550,7 +470,7 @@ export default function ExploradorPage() {
                       Por Corregir
                     </span>
                     <span className="text-base text-[#ffe04a] font-bold leading-tight font-mono">
-                      {analysis.misplaced_count} ítems
+                      {project.misplaced_count} ítems
                     </span>
                   </div>
                 </div>
@@ -562,7 +482,7 @@ export default function ExploradorPage() {
                       Capas Activas
                     </span>
                     <span className="text-base text-[#ff2d78] font-bold leading-tight font-mono">
-                      {analysis.active_layers.length}
+                      {project.active_layers.length}
                     </span>
                   </div>
                 </div>
@@ -570,7 +490,7 @@ export default function ExploradorPage() {
             </div>
           </div>
 
-          {/* Rejilla Principal: Árbol Estructural (5 cols) + Glosario Pedagógico (7 cols) */}
+          {/* Rejilla: Árbol Real (5 cols) + Glosario y Explicación Didáctica (7 cols) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* PANEL IZQUIERDO: Estructura Real del Proyecto */}
             <div className="lg:col-span-5 flex flex-col gap-4 bg-[#0f0f1a] rounded-xl border border-[#262438] shadow-[0_4px_24px_rgba(0,0,0,0.4)] p-4 min-w-0">
@@ -578,13 +498,13 @@ export default function ExploradorPage() {
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-white font-bold truncate">Estructura del Proyecto</span>
                   <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#141422] border border-[#2b2940] text-[#00ffcc] font-semibold shrink-0">
-                    {analysis.framework}
+                    {project.framework}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 px-2.5 py-1.5 bg-[#111118] rounded border border-[#201e30] text-xs font-mono text-[#a098b0] overflow-x-auto truncate">
-                  <span className="text-[#00ffcc] font-semibold">{analysis.project_name}</span>
+                  <span className="text-[#00ffcc] font-semibold">{project.project_name}</span>
                   <span className="text-[#43445c]">/</span>
-                  <span>{filteredStructure.length} carpetas detectadas</span>
+                  <span>{filteredStructure.length} carpetas</span>
                 </div>
               </div>
 
@@ -653,7 +573,7 @@ export default function ExploradorPage() {
                           </div>
                         </div>
 
-                        {/* Archivos reales contenidos en la carpeta seleccionada */}
+                        {/* Archivos reales contenidos */}
                         {isSelected && folderNode.children && folderNode.children.length > 0 && (
                           <div className="ml-4 flex flex-col gap-1 border-l-2 border-[#ff2d78]/40 pl-2 my-0.5">
                             {folderNode.children.map((file) => (
@@ -694,22 +614,25 @@ export default function ExploradorPage() {
                 )}
               </div>
 
-              {/* Diagnóstico rápido si existen archivos fuera de convención */}
-              {analysis.misplaced_count > 0 && (
+              {/* Alerta de Archivos Desordenados */}
+              {project.misplaced_count > 0 && (
                 <div className="mt-2 p-3 bg-[#141422] rounded border border-[#262438] flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
                   <div className="flex items-center gap-2 text-[#a098b0] min-w-0">
                     <span className="material-symbols-outlined text-[#ffe04a] text-[18px] shrink-0">
                       auto_fix_high
                     </span>
                     <span className="text-xs text-white truncate">
-                      {analysis.misplaced_count} archivos sugieren reubicación
+                      {project.misplaced_count} archivos fuera de convención
                     </span>
                   </div>
                   <button
                     onClick={() =>
                       alert(
-                        `Archivos desordenados:\n${analysis.misplaced_files
-                          .map((m: MisplacedFileDetail) => `- ${m.file_name}: ${m.reason} -> Sugerido: ${m.suggested_path}`)
+                        `Archivos desordenados:\n${project.misplaced_files
+                          .map(
+                            (m: MisplacedFileDetail) =>
+                              `- ${m.file_name}: ${m.reason} -> Sugerido: ${m.suggested_path}`
+                          )
                           .join("\n")}`
                       )
                     }

@@ -66,3 +66,7 @@ class AnalysisResponse(BaseModel):
     active_layers: List[str]
     misplaced_files: List[MisplacedFileDetail]
     structure: List[TreeNode]
+    technologies: List[str] = []
+    detected_entities: List[str] = []
+    database_detected: bool = False
+    all_files: List[str] = []

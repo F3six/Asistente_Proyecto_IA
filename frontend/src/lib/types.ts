@@ -17,6 +17,7 @@ export interface ErrorLog {
   title: string;
   category: "Database" | "Routing" | "Views" | "Security" | string;
   layer?: string | null;
+  related_file?: string | null;
   symptom: string;
   root_cause?: string | null;
   solution: string;
@@ -58,6 +59,10 @@ export interface AnalysisResponse {
   active_layers: string[];
   misplaced_files: MisplacedFileDetail[];
   structure: TreeNode[];
+  technologies?: string[];
+  detected_entities?: string[];
+  database_detected?: boolean;
+  all_files?: string[];
 }
 
 export interface FolderExplanation {
@@ -115,4 +120,3 @@ export interface ProjectReport {
     verification_hash: string;
   };
 }
-

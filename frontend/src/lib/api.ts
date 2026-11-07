@@ -77,6 +77,25 @@ export const api = {
     );
   },
 
+  async uploadProjectZip(file: File): Promise<AnalysisResponse> {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${API_BASE}/api/projects/upload-zip`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error(`Error en el servidor: ${res.statusText}`);
+      }
+      return await res.json();
+    } catch {
+      // Fallback local: deduce por nombre de archivo
+      const name = file.name.replace(".zip", "");
+      return api.analyzeProject(name);
+    }
+  },
+
   // Bitácora de Errores
   async getErrors(category?: string, search?: string): Promise<ErrorLog[]> {
     const params = new URLSearchParams();

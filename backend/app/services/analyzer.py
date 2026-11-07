@@ -176,6 +176,30 @@ class FrameworkAnalyzer:
         # Construir árbol esquemático representativo
         structure = cls._build_mock_or_real_tree(file_paths, misplaced)
 
+        # Identificar tecnologías según framework
+        tech_map = {
+            "Spring Boot": ["Java", "Spring Boot", "Maven / Gradle", "Spring Data JPA", "Hibernate REST"],
+            "Laravel": ["PHP", "Laravel", "Composer", "Eloquent ORM", "Blade Views"],
+            "Django": ["Python", "Django", "Django ORM", "MTV Pattern", "SQLite / PostgreSQL"],
+            "Node.js / Express": ["JavaScript / TypeScript", "Node.js", "Express", "npm Modules"],
+        }
+        technologies = tech_map.get(framework, ["Código Modular", "Controlador / Vistas"])
+
+        # Identificar entidades / modelos de base de datos
+        detected_entities = []
+        for path in file_paths:
+            normalized = path.replace("\\", "/").lower()
+            file_name = path.replace("\\", "/").split("/")[-1]
+            if any(m in normalized for m in ["/models/", "/entities/", "/domain/", "app/models/"]):
+                if file_name.endswith((".java", ".php", ".py", ".ts", ".js")):
+                    clean_entity = file_name.rsplit(".", 1)[0]
+                    if clean_entity not in detected_entities and clean_entity not in ["__init__", "index"]:
+                        detected_entities.append(clean_entity)
+            elif framework == "Django" and file_name == "models.py":
+                detected_entities.append("Django Models (models.py)")
+
+        database_detected = len(detected_entities) > 0 or any(".sql" in p or "migrations" in p or "db" in p for p in file_paths)
+
         # Cálculo de salud
         if total_relevant == 0:
             alignment = 100.0
@@ -196,7 +220,11 @@ class FrameworkAnalyzer:
             misplaced_count=len(misplaced),
             active_layers=list(active_layers_set) or ["controllers", "models", "repositories", "services", "config"],
             misplaced_files=misplaced,
-            structure=structure
+            structure=structure,
+            technologies=technologies,
+            detected_entities=detected_entities,
+            database_detected=database_detected,
+            all_files=[p.replace("\\", "/") for p in file_paths]
         )
 
     @classmethod
@@ -364,5 +392,22 @@ class FrameworkAnalyzer:
             misplaced_count=4,
             active_layers=["controllers", "models", "repositories", "services", "config"],
             misplaced_files=misplaced,
-            structure=structure
+            structure=structure,
+            technologies=["Java", "Spring Boot", "Maven", "Spring Data JPA", "Hibernate"],
+            detected_entities=["Employee", "Department", "Role"],
+            database_detected=True,
+            all_files=[
+                "src/main/java/controllers/EmployeeController.java",
+                "src/main/java/controllers/DepartmentController.java",
+                "src/main/java/models/Employee.java",
+                "src/main/java/models/Department.java",
+                "src/main/java/models/Role.java",
+                "src/main/java/repositories/EmployeeRepository.java",
+                "src/main/java/repositories/DepartmentRepository.java",
+                "src/main/java/services/EmployeeService.java",
+                "src/main/java/services/DepartmentService.java",
+                "src/main/java/config/SecurityConfig.java",
+                "src/main/java/TempQueryHelper.java",
+                "src/main/java/mis_scripts/MisFunciones.java"
+            ]
         )
