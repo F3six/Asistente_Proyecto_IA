@@ -1,0 +1,6 @@
+:HL["/Asistente_Proyecto_IA/_next/static/css/d68f921faad6b8c8.css","style"]
+:HL["https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap","style"]
+:HL["https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200","style"]
+2:[["children",{"s":"__PAGE__","h":160}]]
+1:[["children",{"s":"explorador","h":96,"c":"$Q2"}]]
+0:{"b":"JO80aR4G4FENGM4SvVkBw","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
